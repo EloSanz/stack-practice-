@@ -9,13 +9,13 @@ router = APIRouter(prefix="/characters", tags=["Characters"])
 
 
 @router.get("/")
-async def get_characters():
-    return await fetch_characters()
+def get_characters():
+    return fetch_characters()
 
 @router.get("/dead")
-async def get_dead_characters():
-    return await fetch_dead_characters()
+def get_dead_characters():
+    return fetch_dead_characters()
 
 @router.get("/appearances/{character_name}")
-async def get_character_appearances_count(character_name: str):
-    return await fetch_character_appearances_count(character_name)
+def get_character_appearances_count(character_name: str):
+    return fetch_character_appearances_count(character_name)
