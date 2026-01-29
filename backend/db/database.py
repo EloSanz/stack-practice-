@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from collections.abc import AsyncGenerator
 import uuid
 from datetime import datetime
@@ -5,8 +7,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Column, String, DateTime
 
+load_dotenv()
 
-DATABASE_URL = "sqlite+aiosqlite:///./test_db.sqlite"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test_db.sqlite")
 
 
 # Create Base class from DeclarativeBase

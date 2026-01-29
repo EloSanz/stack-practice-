@@ -1,6 +1,10 @@
+import os
+from dotenv import load_dotenv
 from core.http_client import client
 
-RICK_MORTY_API = "https://rickandmortyapi.com/api/character"
+load_dotenv()
+
+RICK_MORTY_API = os.getenv("RICK_MORTY_API", "https://rickandmortyapi.com/api/character")
 
 
 async def fetch_characters():
@@ -26,5 +30,5 @@ async def fetch_character_appearances_count(character_name: str):
         None
     )
     if character:
-        return f"{character.get("name")}:{len(character.get("episode", []))}"
+        return f"{character.get('name')}:{len(character.get('episode', []))}"
     return 0
