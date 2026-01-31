@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Simulación Visual Kafka</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            transition: 0.2s;
+            margin: 0 10px;
+        }
+
+        #btn-produce {
+            background-color: #2ecc71;
+        }
+
+        #btn-produce:hover {
+            background-color: #27ae60;
+        }
+
+        #btn-consume {
+            background-color: #3498db;
+        }
+
+        #btn-consume:hover {
+            background-color: #2980b9;
+        }
+
+        /* Contenedor principal */
+        .system-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 800px;
+            height: 300px;
+            position: relative;
+        }
+
+        /* Componentes */
+        .component {
+            width: 150px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            font-weight: bold;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .producer {
+            background: #e8f5e9;
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .consumer {
+            background: #e3f2fd;
+            border: 2px solid #3498db;
+            color: #3498db;
+        }
+
+        /* El Broker/Topic */
+        .broker {
+            width: 300px;
+            height: 180px;
+            background: #fff3e0;
+            border: 3px dashed #e67e22;
+            display: flex;
+            flex-direction: row;
+            /* Horizontal log */
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .broker-label {
+            position: absolute;
+            top: -25px;
+            color: #e67e22;
+            font-weight: bold;
+        }
+
+        /* Mensajes (Log entry) */
+        .message {
+            width: 40px;
+            height: 40px;
+            background-color: #e67e22;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            margin-right: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.3s ease-out;
+            flex-shrink: 0;
+            /* No encoger */
+        }
+
+        /* Animación de movimiento (simulada con JS transitions) */
+        .flying-msg {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #e67e22;
+            border-radius: 50%;
+            transition: all 0.8s ease-in-out;
+            z-index: 10;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Simulador de Apache Kafka</h2>
+    <div class="controls">
+        <button id="btn-produce" onclick="produce()">🏭 Producir (Enviar)</button>
+        <button id="btn-consume" onclick="consume()">🧑‍💻 Consumir (Leer)</button>
+    </div>
+
+    <div class="system-container">
+        <div class="component producer" id="producer">
+            PRODUCER<br>Python
+        </div>
+
+        <div class="broker" id="topic">
+            <span class="broker-label">KAFKA TOPIC (Log)</span>
+        </div>
+
+        <div class="component consumer" id="consumer">
+            CONSUMER<br>Python
+        </div>
+    </div>
+
+    <div id="status" style="margin-top: 20px; color: #666; font-style: italic;">Esperando acción...</div>
+
+    <script>
+        let msgCount = 0;
+        const topic = document.getElementById('topic');
+        const status = document.getElementById('status');
+        let messagesInTopic = [];
+
+        async function produce() {
+            try {
+                const response = await fetch('http://localhost:5001/produce', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Solo disparamos la animación si el backend confirmó el envío
+                    msgCount++;
+                    const msgId = msgCount;
+                    animateProduction(msgId);
+                }
+            } catch (err) {
+                status.innerText = "Error: ¿Está corriendo bridge.py?";
+            }
+        }
+
+        function animateProduction(msgId) {
+            const flyer = document.createElement('div');
+            flyer.className = 'flying-msg';
+            flyer.innerText = msgId;
+            document.body.appendChild(flyer);
+
+            const prodRect = document.getElementById('producer').getBoundingClientRect();
+            flyer.style.left = (prodRect.left + 50) + 'px';
+            flyer.style.top = (prodRect.top + 50) + 'px';
+
+            status.innerText = `Productor: Enviando mensaje #${msgId}...`;
+
+            setTimeout(() => {
+                const topicRect = topic.getBoundingClientRect();
+                const offset = messagesInTopic.length * 45;
+                flyer.style.left = (topicRect.left + 20 + offset) + 'px';
+                flyer.style.top = (topicRect.top + 70) + 'px';
+            }, 50);
+
+            setTimeout(() => {
+                flyer.remove();
+                const staticMsg = document.createElement('div');
+                staticMsg.className = 'message';
+                staticMsg.innerText = msgId;
+                staticMsg.id = 'msg-' + msgId;
+                topic.appendChild(staticMsg);
+                messagesInTopic.push(msgId);
+                status.innerText = `Kafka: Mensaje #${msgId} guardado REAL en el log.`;
+            }, 850);
+        }
+
+        async function consume() {
+            try {
+                const response = await fetch('http://localhost:5001/consume');
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const msgData = result.data;
+                    const displayId = msgData.id;
+
+                    // Si hay algo en la lista visual, lo movemos
+                    if (messagesInTopic.length > 0) {
+                        const internalId = messagesInTopic.shift();
+                        const msgEl = document.getElementById('msg-' + internalId);
+                        animateConsumption(internalId, msgEl);
+                    } else {
+                        status.innerText = `Consumidor: Recibido de Kafka -> ID: ${displayId}`;
+                    }
+                } else {
+                    status.innerText = "Consumidor: No hay mensajes en el servidor.";
+                }
+            } catch (err) {
+                status.innerText = "Error: ¿Está corriendo bridge.py?";
+            }
+        }
+
+        function animateConsumption(msgId, msgEl) {
+            status.innerText = `Consumidor: Procesando mensaje #${msgId} de Kafka...`;
+            msgEl.style.position = 'fixed';
+            const rect = msgEl.getBoundingClientRect();
+            msgEl.style.left = rect.left + 'px';
+            msgEl.style.top = rect.top + 'px';
+            msgEl.style.margin = '0';
+            document.body.appendChild(msgEl);
+
+            setTimeout(() => {
+                const consRect = document.getElementById('consumer').getBoundingClientRect();
+                msgEl.style.transition = 'all 0.8s ease-in-out';
+                msgEl.style.left = (consRect.left + 50) + 'px';
+                msgEl.style.top = (consRect.top + 50) + 'px';
+                msgEl.style.opacity = '0';
+            }, 50);
+
+            setTimeout(() => {
+                msgEl.remove();
+                status.innerText = `Consumidor: Mensaje #${msgId} finalizado.`;
+            }, 900);
+        }
+    </script>
+</body>
+
+</html>
