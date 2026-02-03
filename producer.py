@@ -2,9 +2,13 @@ import time
 import json
 from kafka import KafkaProducer
 
-# Configuración: Le decimos dónde está el servidor Kafka (la caja naranja de la animación)
+import os
+
+# Configuración: Le decimos dónde está el servidor Kafka
+kafka_server = os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+
 producer = KafkaProducer(
-    bootstrap_servers=['localhost:9092'],
+    bootstrap_servers=[kafka_server],
     # Esto convierte diccionarios de Python a JSON (bytes) para viajar por la red
     value_serializer=lambda x: json.dumps(x).encode('utf-8')
 )

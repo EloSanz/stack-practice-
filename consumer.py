@@ -2,10 +2,14 @@ import json
 import time
 from kafka import KafkaConsumer
 
+import os
+
 # Configuración: Conectar a la caja naranja para escuchar
+kafka_server = os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+
 consumer = KafkaConsumer(
     'pedidos',  # Nombre del tópico a escuchar
-    bootstrap_servers=['localhost:9092'],
+    bootstrap_servers=[kafka_server],
     auto_offset_reset='earliest', # Si soy nuevo, leo desde el primer mensaje disponible
     group_id='mi-grupo-de-consumidores', # Identificador del grupo
     value_deserializer=lambda x: json.loads(x.decode('utf-8')) # Convertir bytes a diccionario

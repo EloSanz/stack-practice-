@@ -11,10 +11,15 @@ CORS(app)
 # Queues para comunicar los hilos de Kafka con Flask
 messages_received = queue.Queue()
 
+import os
+
+# Configuración: Le decimos dónde está el servidor Kafka
+kafka_server = os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+
 # --- KAFKA PRODUCER ---
 try:
     producer = KafkaProducer(
-        bootstrap_servers=['localhost:9092'],
+        bootstrap_servers=[kafka_server],
         value_serializer=lambda x: json.dumps(x).encode('utf-8')
     )
 except Exception as e:
@@ -26,7 +31,7 @@ def kafka_consumer_thread():
     try:
         consumer = KafkaConsumer(
             'pedidos',
-            bootstrap_servers=['localhost:9092'],
+            bootstrap_servers=[kafka_server],
             auto_offset_reset='latest',
             value_deserializer=lambda x: json.loads(x.decode('utf-8'))
         )
@@ -60,4 +65,4 @@ def consume_message():
         return jsonify({"status": "empty", "message": "Sin mensajes nuevos"}), 200
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run(host='0.0.0.0', port=5001)
