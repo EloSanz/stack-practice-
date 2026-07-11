@@ -1,21 +1,33 @@
 from fastapi import APIRouter, Depends
 from typing import List
-from src.domains.persons.models import Person
+from src.domains.persons.models import Person, Address
 from src.domains.persons.services import PersonService
 from src.api.deps import get_person_service
+from src.api.v1.schemas.persons import PersonCreateRequest
 
 router = APIRouter(prefix="/persons", tags=["Persons"])
 
 @router.post("", response_model=Person, status_code=201)
 def add_person(
-    person: Person,
+    payload: PersonCreateRequest,
     service: PersonService = Depends(get_person_service)
 ):
     """
     Endpoint to create and persist a Person.
     """
-    service.save_person(person)
-    return person
+    domain_person = Person(
+        first=payload.first,
+        lastname=payload.lastname,
+        age=payload.age,
+        address=Address(
+            street_name=payload.address.street_name,
+            street_number=payload.address.street_number,
+            lat=payload.address.lat,
+            long=payload.address.long
+        )
+    )
+    service.save_person(domain_person)
+    return domain_person
 
 @router.get("/listPeople", response_model=List[Person])
 def list_people(

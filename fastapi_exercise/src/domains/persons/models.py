@@ -1,11 +1,18 @@
 from pydantic import BaseModel
 from typing import List, ClassVar
 
+class Address(BaseModel):
+    street_name: str
+    street_number: int
+    lat: int
+    long: int
+
 class Person(BaseModel):
     first: str
-    lastname: str
+    lastname: str 
     age: int
-
+    address: Address
+    
     # In-memory mock database to simulate persistence
     _db: ClassVar[List["Person"]] = []
 

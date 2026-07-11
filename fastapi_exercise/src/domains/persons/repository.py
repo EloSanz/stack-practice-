@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import List
-from .models import Person
+from typing import List, cast
+from sqlalchemy.orm import Session
+from src.infrastructure.database.models import PersonDB, AddressDB
+from .models import Person, Address
 
 class PersonInterface(ABC):
     @abstractmethod
@@ -18,14 +20,47 @@ class PersonInterface(ABC):
         pass
 
 class PersonRepository(PersonInterface):
+    def __init__(self, db: Session):
+        self.db = db
+
     def savePerson(self, person: Person) -> None:
         """
-        Implementation of saving a Person using Person.save().
+        Save person and address into Postgres via SQLAlchemy.
         """
-        person.save()
+        db_address = AddressDB(
+            street_name=person.address.street_name,
+            street_number=person.address.street_number,
+            lat=person.address.lat,
+            long=person.address.long
+        )
+        self.db.add(db_address)
+        self.db.flush()
+
+        db_person = PersonDB(
+            first=person.first,
+            lastname=person.lastname,
+            age=person.age,
+            address_id=cast(int, db_address.id)
+        )
+        self.db.add(db_person)
+        self.db.commit()
 
     def getAll(self) -> List[Person]:
         """
-        Implementation of retrieving all Person objects.
+        Retrieve all persons and map them back to domain models.
         """
-        return Person._db
+        db_persons = self.db.query(PersonDB).all()
+        return [
+            Person(
+                first=cast(str, p.first),
+                lastname=cast(str, p.lastname),
+                age=cast(int, p.age),
+                address=Address(
+                    street_name=cast(str, p.address.street_name),
+                    street_number=cast(int, p.address.street_number),
+                    lat=cast(int, p.address.lat),
+                    long=cast(int, p.address.long)
+                )
+            )
+            for p in db_persons
+        ]

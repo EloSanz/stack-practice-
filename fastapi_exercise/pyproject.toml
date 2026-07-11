@@ -7,7 +7,14 @@ requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.139.0",
     "pydantic>=2.13.4",
+    "sqlalchemy>=2.0.31",
+    "psycopg2-binary>=2.9.9",
+    "ruff>=0.15.20",
+    "taskipy>=1.14.1",
     "uvicorn[standard]>=0.30.0",
 ]
 [tool.pyright]
 extraPaths = ["."]
+
+[tool.taskipy.tasks]
+lint = "ruff check src/"
