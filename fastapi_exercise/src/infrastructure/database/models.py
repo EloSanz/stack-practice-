@@ -1,6 +1,6 @@
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .db import Base
+from src.core.db import Base
 
 class AddressDB(Base):
     __tablename__ = "addresses"

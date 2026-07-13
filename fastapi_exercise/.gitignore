@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.python-version
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.pyright_cache/
+
+# Environment files
+.env
+
+# Practice directory (ignored as requested)
+practice/

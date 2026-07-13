@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from src.domains.persons.models import Person, Address
 from src.domains.persons.services import PersonService
 from src.api.deps import get_person_service
-from src.api.v1.schemas.persons import PersonCreateRequest
+from src.domains.persons.schemas import PersonCreateRequest, AddressWithPeople
 
 router = APIRouter(prefix="/persons", tags=["Persons"])
 
@@ -46,3 +46,16 @@ def list_people_with_legal_age(
     Endpoint that returns only registered people of legal age (age >= 18).
     """
     return service.list_people_of_legal_age()
+
+@router.get("/address/{address_id}", response_model=AddressWithPeople)
+def get_address_with_people(
+    address_id: int,
+    service: PersonService = Depends(get_person_service)
+):
+    """
+    Endpoint to retrieve an address and all the people associated with it.
+    """
+    result = service.get_address_with_people(address_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Address not found")
+    return result

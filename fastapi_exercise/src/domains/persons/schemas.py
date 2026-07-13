@@ -11,3 +11,16 @@ class PersonCreateRequest(BaseModel):
     lastname: str = Field(..., min_length=2, max_length=50, description="Last name")
     age: int = Field(..., gt=0, lt=130, description="Age, must be between 1 and 130")
     address: AddressCreateRequest = Field(..., description="Address details")
+
+class PersonInAddress(BaseModel):
+    first: str
+    lastname: str
+    age: int
+
+class AddressWithPeople(BaseModel):
+    id: int
+    street_name: str
+    street_number: int
+    lat: int
+    long: int
+    persons: list[PersonInAddress]
